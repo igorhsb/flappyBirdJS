@@ -61,12 +61,12 @@ function Barreiras (altura, abertura, largura, espaco, notPonto) {
         })
     }
 
-    this.setDeslocamento = x => this.deslocamento = x >= 1 ? x : 1;
+    this.setDeslocamento = x => this.deslocamento = (x >= 1 ? x : 1);
 }
 
 function Passaro (alturaJogo) {
     let voando = false;
-
+    this.mult = 1;
     this.element = newElement('img', 'passaro');
     this.element.src = "imgs/passaro.png";
 
@@ -79,9 +79,8 @@ function Passaro (alturaJogo) {
     window.onkeyup = e => voando = false;
 
     this.animar = () => {
-        const newY =  this.getY() + (voando ? 8 : -5); 
+        const newY =  this.getY() + (voando ? 8*this.mult : -5*this.mult); 
         const alturaMax = alturaJogo - this.element.clientHeight
-        console.log("y: ", newY)
         if(newY <= 0) {
             this.setY(0)
         } else if (newY >= alturaMax) {
@@ -90,6 +89,8 @@ function Passaro (alturaJogo) {
             this.setY(newY)
         }
     }
+
+    this.setUpDown = mult => this.mult = mult >= 1 ? mult : 1; 
 
     this.setY(alturaJogo/2);
 }
@@ -102,8 +103,29 @@ function Progresso() {
     this.updatePoints(0);
 }
 
+function sobreposicao(elemA, elemB) {
+    const a = elemA.getBoundingClientRect();
+    const b = elemB.getBoundingClientRect();
+    const horizontal = a.left + a.width >= b.left && b.left + b.width >= a.left;
+    const vertical = a.top + a.height >= b.top && b.top + b.height >= a.top;
+    return vertical && horizontal;
+}
+
+function colide(passaro, barreiras) {
+    let colided = false;
+    barreiras.pares.forEach( par => {
+        if(!colided) {
+            const superior = par.superior.element
+            const inferior = par.inferior.element
+            colided = sobreposicao(passaro.element, superior) || sobreposicao(passaro.element, inferior) 
+        }
+    })
+    return colided;
+}
+
 function game () {
     let points = 0;
+    let mult = 1;
     const areaDoJogo = document.querySelector('#wm-flappy');
     const alturaJogo = areaDoJogo.clientHeight;
     const larguraJogo = areaDoJogo.clientWidth;
@@ -122,6 +144,14 @@ function game () {
         const temp = setInterval(() => {
             barreiras.animar()
             passaro.animar()
+            if(points === 3) {
+                mult = 1.2;
+                barreiras.setDeslocamento(3);
+                passaro.setUpDown(mult);
+            }
+            if(colide(passaro, barreiras)) {
+                clearInterval(temp)
+            }
         }, 20)
     }
 }
