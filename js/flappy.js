@@ -94,14 +94,36 @@ function Passaro (alturaJogo) {
     this.setY(alturaJogo/2);
 }
 
-const barreiras = new Barreiras(700, 200, 1200, 400)
-const areaDoJogo = document.querySelector('#wm-flappy')
-const passaro = new Passaro(700)
-areaDoJogo.appendChild(passaro.element)
-barreiras.pares.forEach(par => {
-    areaDoJogo.appendChild(par.element)
-})
-setInterval(() => {
-    barreiras.animar()
-    passaro.animar()
-}, 20)
+function Progresso() {
+    this.element = newElement('span', 'progresso')
+    this.updatePoints = points => {
+        this.element.innerHTML = points
+    }
+    this.updatePoints(0);
+}
+
+function game () {
+    let points = 0;
+    const areaDoJogo = document.querySelector('#wm-flappy');
+    const alturaJogo = areaDoJogo.clientHeight;
+    const larguraJogo = areaDoJogo.clientWidth;
+    const abertura = 200;
+    const espaco = 400;
+    const progresso = new Progresso();
+    const barreiras = new Barreiras(alturaJogo, abertura, larguraJogo, espaco, () => progresso.updatePoints(++points));
+    const passaro = new Passaro(alturaJogo);
+    areaDoJogo.appendChild(progresso.element)
+    areaDoJogo.appendChild(passaro.element)
+    barreiras.pares.forEach(par => {
+        areaDoJogo.appendChild(par.element)
+    })
+
+    this.start = () => {
+        const temp = setInterval(() => {
+            barreiras.animar()
+            passaro.animar()
+        }, 20)
+    }
+}
+
+new game().start();
