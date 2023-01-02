@@ -129,7 +129,7 @@ function game () {
     const areaDoJogo = document.querySelector('#wm-flappy');
     const alturaJogo = areaDoJogo.clientHeight;
     const larguraJogo = areaDoJogo.clientWidth;
-    const abertura = 200;
+    const abertura = 300;
     const espaco = 400;
     const progresso = new Progresso();
     const barreiras = new Barreiras(alturaJogo, abertura, larguraJogo, espaco, () => progresso.updatePoints(++points));
@@ -141,13 +141,17 @@ function game () {
     })
 
     this.start = () => {
+        let update = 1;
         const temp = setInterval(() => {
             barreiras.animar()
             passaro.animar()
-            if(points === 3) {
-                mult = 1.2;
-                barreiras.setDeslocamento(3);
-                passaro.setUpDown(mult);
+            if(points % 3 === 0 && update != 0 && points != 0) {
+                mult = 1.3;
+                barreiras.setDeslocamento(barreiras.deslocamento * mult);
+                passaro.setUpDown(passaro.mult*mult);
+                update = 0;
+            } else if(points % 3 !== 0 && points != 0) {
+                update = 1;
             }
             if(colide(passaro, barreiras)) {
                 clearInterval(temp)
